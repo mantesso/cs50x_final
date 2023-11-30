@@ -1,3 +1,70 @@
+const floydSteinbergKernel = [
+  { offsetX: 1, offsetY: 0, fraction: 7 / 16 },
+  { offsetX: -1, offsetY: 1, fraction: 3 / 16 },
+  { offsetX: 0, offsetY: 1, fraction: 5 / 16 },
+  { offsetX: 1, offsetY: 1, fraction: 1 / 16 },
+];
+
+const falseFloydSteinbergKernel = [
+  { offsetX: 1, offsetY: 0, fraction: 3 / 8 },
+  { offsetX: 0, offsetY: 1, fraction: 3 / 8 },
+  { offsetX: 1, offsetY: 1, fraction: 2 / 8 },
+];
+
+const stuckiKernel = [
+  { offsetX: 1, offsetY: 0, fraction: 8 / 42 },
+  { offsetX: 2, offsetY: 0, fraction: 4 / 42 },
+  { offsetX: -2, offsetY: 1, fraction: 2 / 42 },
+  { offsetX: -1, offsetY: 1, fraction: 4 / 42 },
+  { offsetX: 0, offsetY: 1, fraction: 8 / 42 },
+  { offsetX: 1, offsetY: 1, fraction: 4 / 42 },
+  { offsetX: 2, offsetY: 1, fraction: 2 / 42 },
+  { offsetX: -2, offsetY: 2, fraction: 1 / 42 },
+  { offsetX: -1, offsetY: 2, fraction: 2 / 42 },
+  { offsetX: 0, offsetY: 2, fraction: 4 / 42 },
+  { offsetX: 1, offsetY: 2, fraction: 2 / 42 },
+  { offsetX: 2, offsetY: 2, fraction: 1 / 42 },
+];
+
+const burkesKernel = [
+  { offsetX: 1, offsetY: 0, fraction: 8 / 32 },
+  { offsetX: 2, offsetY: 0, fraction: 4 / 32 },
+  { offsetX: -2, offsetY: 1, fraction: 2 / 32 },
+  { offsetX: -1, offsetY: 1, fraction: 4 / 32 },
+  { offsetX: 0, offsetY: 1, fraction: 8 / 32 },
+  { offsetX: 1, offsetY: 1, fraction: 4 / 32 },
+  { offsetX: 2, offsetY: 1, fraction: 2 / 32 },
+];
+
+const sierra3Kernel = [
+  { offsetX: 1, offsetY: 0, fraction: 5 / 32 },
+  { offsetX: 2, offsetY: 0, fraction: 3 / 32 },
+  { offsetX: -2, offsetY: 1, fraction: 2 / 32 },
+  { offsetX: -1, offsetY: 1, fraction: 4 / 32 },
+  { offsetX: 0, offsetY: 1, fraction: 5 / 32 },
+  { offsetX: 1, offsetY: 1, fraction: 4 / 32 },
+  { offsetX: 2, offsetY: 1, fraction: 2 / 32 },
+  { offsetX: -1, offsetY: 2, fraction: 2 / 32 },
+  { offsetX: 0, offsetY: 2, fraction: 3 / 32 },
+  { offsetX: 1, offsetY: 2, fraction: 2 / 32 },
+];
+
+const sierra2Kernel = [
+  { offsetX: 1, offsetY: 0, fraction: 4 / 16 },
+  { offsetX: 2, offsetY: 0, fraction: 3 / 16 },
+  { offsetX: -2, offsetY: 1, fraction: 1 / 16 },
+  { offsetX: -1, offsetY: 1, fraction: 2 / 16 },
+  { offsetX: 0, offsetY: 1, fraction: 3 / 16 },
+  { offsetX: 1, offsetY: 1, fraction: 2 / 16 },
+  { offsetX: 2, offsetY: 1, fraction: 1 / 16 },
+];
+
+const sierra24AKernel = [
+  { offsetX: 1, offsetY: 0, fraction: 2 / 4 },
+  { offsetX: -2, offsetY: 1, fraction: 1 / 4 },
+  { offsetX: -1, offsetY: 1, fraction: 1 / 4 },
+];
+
 window.onload = function () {
   const img = document.getElementById("sourceImage");
   const w = img.width;
@@ -55,7 +122,7 @@ window.onload = function () {
       }
     }
   }
-  // randomDither(data);
+  randomDither(data);
 
   function index(x, y) {
     return (x + y * img.width) * 4;
@@ -77,7 +144,37 @@ window.onload = function () {
       }
     }
   }
-  grayLevels(data, 4);
+  // grayLevels(data, 4);
+
+  function applyDithering(data, kernel) {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let [oldR, oldG, oldB] = data.getPixel(x, y);
+        let newR = findClosestPaletteColor(oldR);
+        let newG = findClosestPaletteColor(oldG);
+        let newB = findClosestPaletteColor(oldB);
+        data.setPixel(x, y, newR, newG, newB);
+
+        let errorR = oldR - newR;
+        let errorG = oldG - newG;
+        let errorB = oldB - newB;
+
+        kernel.forEach(({ offsetX, offsetY, fraction }) => {
+          distributeError(
+            x + offsetX,
+            y + offsetY,
+            errorR,
+            errorG,
+            errorB,
+            fraction
+          );
+        });
+      }
+    }
+  }
+
+  // grayScale(data);
+  // applyDithering(data, sierra24AKernel);
 
   // Floyd-Steinberg Dithering
   function floydDither(data) {
@@ -105,13 +202,13 @@ window.onload = function () {
   // floydDither(data);
 
   function distributeError(x, y, errorR, errorG, errorB, fraction) {
+    // return if x and y values are outside of img limits
     if (x < 0 || x >= img.width || y < 0 || y >= img.height) return;
+
     let [r, g, b] = data.getPixel(x, y);
-    // console.log(data.getPixel(x, y));
     r = r + errorR * fraction;
     g = g + errorG * fraction;
     b = b + errorB * fraction;
-    // console.log(r, g, b);
     data.setPixel(x, y, r, g, b);
   }
 
