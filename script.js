@@ -66,7 +66,6 @@ const sierra24AKernel = [
 ];
 
 // Global variables
-// Global variables
 let img, canvas, ctx, imageData, originalImageData, data, h, w;
 const maxWidth = 800; // Maximum width for the resized image
 
