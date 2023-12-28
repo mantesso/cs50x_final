@@ -65,152 +65,246 @@ const sierra24AKernel = [
   { offsetX: -1, offsetY: 1, fraction: 1 / 4 },
 ];
 
-window.onload = function () {
-  const img = document.getElementById("sourceImage");
-  const w = img.width;
-  const h = img.height;
+// Global variables
+// Global variables
+let img, canvas, ctx, imageData, originalImageData, data, h, w;
+const maxWidth = 800; // Maximum width for the resized image
 
-  var canvas = document.getElementById("imageCanvas");
-  var ctx = canvas.getContext("2d");
+document
+  .getElementById("imageUpload")
+  .addEventListener("change", handleImageUpload, false);
+document
+  .getElementById("applyEffect")
+  .addEventListener("click", applySelectedEffect);
 
-  canvas.width = img.width;
-  canvas.height = img.height;
-  ctx.drawImage(img, 0, 0);
+function handleImageUpload(event) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    img = new Image();
+    img.onload = function () {
+      const resizedDimensions = getResizedDimensions(img, maxWidth);
+      h = resizedDimensions.height;
+      w = resizedDimensions.width;
+      drawImageOnCanvas(img, resizedDimensions);
+      saveOriginalImageData(); // Save the resized original image data
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(event.target.files[0]);
+}
 
-  var imageData = ctx.getImageData(0, 0, img.width, img.height);
+function getResizedDimensions(image, maxWidth) {
+  const ratio = image.width / image.height;
+  let newWidth = image.width;
+  let newHeight = image.height;
+
+  if (image.width > maxWidth) {
+    newWidth = maxWidth;
+    newHeight = maxWidth / ratio;
+  }
+
+  return { width: newWidth, height: newHeight };
+}
+
+function drawImageOnCanvas(image, dimensions) {
+  canvas = document.getElementById("imageCanvas");
+  ctx = canvas.getContext("2d");
+  canvas.width = dimensions.width;
+  canvas.height = dimensions.height;
+  ctx.drawImage(image, 0, 0, dimensions.width, dimensions.height);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   data = imageData.data;
+  extendImageData(data);
+}
 
-  // adds the getPixel method to the (image)data object
-  // and return an array [R, G, B, A]
+function saveOriginalImageData() {
+  originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+}
+
+function resetCanvasToOriginal() {
+  ctx.putImageData(originalImageData, 0, 0);
+  imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  data = imageData.data;
+  extendImageData(data);
+}
+
+function applySelectedEffect() {
+  console.log("applySelectedEffect function");
+  resetCanvasToOriginal(); // Reset canvas to original image before applying a new effect
+
+  const grayscaleChecked = document.getElementById("grayscaleCheckbox").checked;
+  if (grayscaleChecked) {
+    console.log("grayscale selected");
+    grayScale(data); // Convert to grayscale if checked
+  }
+
+  const selectedEffect = document.getElementById("effectSelector").value;
+  if (!img) {
+    console.error("No image selected");
+    return;
+  }
+
+  switch (selectedEffect) {
+    case "floydSteinberg":
+      applyDithering(data, floydSteinbergKernel);
+      break;
+    case "falseFloydSteinberg":
+      applyDithering(data, falseFloydSteinbergKernel);
+      break;
+    case "stucki":
+      applyDithering(data, stuckiKernel);
+      break;
+    case "burkes":
+      applyDithering(data, burkesKernel);
+      break;
+    case "sierra3":
+      applyDithering(data, sierra3Kernel);
+      break;
+    case "sierra2":
+      applyDithering(data, sierra2Kernel);
+      break;
+    case "sierra24A":
+      applyDithering(data, sierra24AKernel);
+      break;
+    case "randomDither":
+      randomDither(data);
+    default:
+      console.error("Invalid effect selected");
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function extendImageData(data) {
   data.getPixel = function (x, y) {
-    var i = (x + y * img.width) * 4;
+    var i = (x + y * canvas.width) * 4;
     return [this[i], this[i + 1], this[i + 2], this[i + 3]];
   };
 
   data.setPixel = function (x, y, r, g, b, a = 255) {
-    var i = (x + y * img.width) * 4;
+    var i = (x + y * canvas.width) * 4;
     this[i] = r;
     this[i + 1] = g;
     this[i + 2] = b;
     this[i + 3] = a;
   };
+}
 
-  // convert to gray scale
-  function grayScale(data) {
-    for (var i = 0, loop = data.length; i < loop; i += 4) {
-      let average = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      data[i] = average;
-      data[i + 1] = average;
-      data[i + 2] = average;
+// convert to gray scale
+function grayScale(data) {
+  for (var i = 0, loop = data.length; i < loop; i += 4) {
+    let average = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    data[i] = average;
+    data[i + 1] = average;
+    data[i + 2] = average;
+  }
+}
+// grayScale(data);
+
+// random dither
+function randomDither(data) {
+  for (var i = 0, loop = data.length; i < loop; i += 4) {
+    // Returns a random integer from 0 to 255:
+    let random = Math.floor(Math.random() * 256);
+    if (random > data[i]) {
+      data[i] = 0;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
+    } else {
+      data[i] = 255;
+      data[i + 1] = 255;
+      data[i + 2] = 255;
     }
   }
-  // grayScale(data);
+}
 
-  // random dither
-  function randomDither(data) {
-    for (var i = 0, loop = data.length; i < loop; i += 4) {
-      // Returns a random integer from 0 to 255:
-      let random = Math.floor(Math.random() * 256);
-      if (random > data[i]) {
-        data[i] = 0;
-        data[i + 1] = 0;
-        data[i + 2] = 0;
-      } else {
-        data[i] = 255;
-        data[i + 1] = 255;
-        data[i + 2] = 255;
-      }
+function index(x, y) {
+  return (x + y * img.width) * 4;
+}
+
+function findClosestPaletteColor(value, steps = 1) {
+  return Math.round((steps * value) / 255) * Math.floor(255 / steps);
+}
+
+// gray levels
+function grayLevels(data, levels) {
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let [oldR, oldG, oldB] = data.getPixel(x, y);
+      let average = (oldR + oldG + oldB) / 3;
+      let newColor = findClosestPaletteColor(average, levels);
+
+      data.setPixel(x, y, newColor, newColor, newColor);
     }
   }
-  randomDither(data);
+}
+// grayLevels(data, 4);
 
-  function index(x, y) {
-    return (x + y * img.width) * 4;
-  }
+function applyDithering(data, kernel) {
+  console.log("applyDithering function");
 
-  function findClosestPaletteColor(value, steps = 1) {
-    return Math.round((steps * value) / 255) * Math.floor(255 / steps);
-  }
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let [oldR, oldG, oldB] = data.getPixel(x, y);
+      let newR = findClosestPaletteColor(oldR);
+      let newG = findClosestPaletteColor(oldG);
+      let newB = findClosestPaletteColor(oldB);
+      data.setPixel(x, y, newR, newG, newB);
 
-  // gray levels
-  function grayLevels(data, levels) {
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let [oldR, oldG, oldB] = data.getPixel(x, y);
-        let average = (oldR + oldG + oldB) / 3;
-        let newColor = findClosestPaletteColor(average, levels);
+      let errorR = oldR - newR;
+      let errorG = oldG - newG;
+      let errorB = oldB - newB;
 
-        data.setPixel(x, y, newColor, newColor, newColor);
-      }
+      kernel.forEach(({ offsetX, offsetY, fraction }) => {
+        distributeError(
+          x + offsetX,
+          y + offsetY,
+          errorR,
+          errorG,
+          errorB,
+          fraction
+        );
+      });
     }
   }
-  // grayLevels(data, 4);
+  console.log("applyDithering ends");
+}
 
-  function applyDithering(data, kernel) {
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let [oldR, oldG, oldB] = data.getPixel(x, y);
-        let newR = findClosestPaletteColor(oldR);
-        let newG = findClosestPaletteColor(oldG);
-        let newB = findClosestPaletteColor(oldB);
-        data.setPixel(x, y, newR, newG, newB);
+// grayScale(data);
+// applyDithering(data, sierra24AKernel);
 
-        let errorR = oldR - newR;
-        let errorG = oldG - newG;
-        let errorB = oldB - newB;
+// Floyd-Steinberg Dithering
+function floydDither(data) {
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let [oldR, oldG, oldB] = data.getPixel(x, y);
+      let newR = findClosestPaletteColor(oldR);
+      let newG = findClosestPaletteColor(oldG);
+      let newB = findClosestPaletteColor(oldB);
+      data.setPixel(x, y, newR, newG, newB);
 
-        kernel.forEach(({ offsetX, offsetY, fraction }) => {
-          distributeError(
-            x + offsetX,
-            y + offsetY,
-            errorR,
-            errorG,
-            errorB,
-            fraction
-          );
-        });
-      }
+      let errorR = oldR - newR;
+      let errorG = oldG - newG;
+      let errorB = oldB - newB;
+
+      distributeError(x + 1, y, errorR, errorG, errorB, 7 / 16);
+      distributeError(x - 1, y + 1, errorR, errorG, errorB, 3 / 16);
+      distributeError(x, y + 1, errorR, errorG, errorB, 5 / 16);
+      distributeError(x + 1, y + 1, errorR, errorG, errorB, 1 / 16);
     }
   }
+}
 
-  // grayScale(data);
-  // applyDithering(data, sierra24AKernel);
+// grayScale(data);
+// floydDither(data);
 
-  // Floyd-Steinberg Dithering
-  function floydDither(data) {
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let [oldR, oldG, oldB] = data.getPixel(x, y);
-        let newR = findClosestPaletteColor(oldR);
-        let newG = findClosestPaletteColor(oldG);
-        let newB = findClosestPaletteColor(oldB);
-        data.setPixel(x, y, newR, newG, newB);
+function distributeError(x, y, errorR, errorG, errorB, fraction) {
+  // return if x and y values are outside of img limits
+  if (x < 0 || x >= img.width || y < 0 || y >= img.height) return;
 
-        let errorR = oldR - newR;
-        let errorG = oldG - newG;
-        let errorB = oldB - newB;
-
-        distributeError(x + 1, y, errorR, errorG, errorB, 7 / 16);
-        distributeError(x - 1, y + 1, errorR, errorG, errorB, 3 / 16);
-        distributeError(x, y + 1, errorR, errorG, errorB, 5 / 16);
-        distributeError(x + 1, y + 1, errorR, errorG, errorB, 1 / 16);
-      }
-    }
-  }
-
-  // grayScale(data);
-  // floydDither(data);
-
-  function distributeError(x, y, errorR, errorG, errorB, fraction) {
-    // return if x and y values are outside of img limits
-    if (x < 0 || x >= img.width || y < 0 || y >= img.height) return;
-
-    let [r, g, b] = data.getPixel(x, y);
-    r = r + errorR * fraction;
-    g = g + errorG * fraction;
-    b = b + errorB * fraction;
-    data.setPixel(x, y, r, g, b);
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-};
+  let [r, g, b] = data.getPixel(x, y);
+  r = r + errorR * fraction;
+  g = g + errorG * fraction;
+  b = b + errorB * fraction;
+  data.setPixel(x, y, r, g, b);
+}

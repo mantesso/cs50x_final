@@ -7,9 +7,29 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <div class="container">
+    <h1>Image dithering</h1>
+    <div class="effects"> 
+      <input type="file" id="imageUpload" accept="image/*">
+      <select id="effectSelector">
+        <option value="randomDither">Random Dither</option>
+        <option value="floydSteinberg">Floyd-Steinberg</option>
+        <option value="falseFloydSteinberg">False Floyd-Steinberg</option>
+        <option value="stucki">Stucki</option>
+        <option value="burkes">Burkes</option>
+        <option value="sierra3">Sierra-3</option>
+        <option value="sierra2">Sierra-2</option>
+        <option value="sierra24A">Sierra-2-4A</option>
+        
 
-    <img id="sourceImage" src="half_big.jpg" style="display:none;">
-    <canvas id="imageCanvas"></canvas>
-    <script src="script.js"></script>
+      </select>
+      <label>
+        <input type="checkbox" id="grayscaleCheckbox"> Convert to Grayscale
+      </label>
+      <button id="applyEffect">Apply Effect</button>
+    </div>
+      <canvas id="imageCanvas"></canvas>
+      <script src="script.js"></script>
+    </div>
 </body>
 </html>
