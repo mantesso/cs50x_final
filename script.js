@@ -129,12 +129,12 @@ function resetCanvasToOriginal() {
 
 function applySelectedEffect() {
   console.log("applySelectedEffect function");
-  resetCanvasToOriginal(); // Reset canvas to original image before applying a new effect
+  resetCanvasToOriginal();
 
   const grayscaleChecked = document.getElementById("grayscaleCheckbox").checked;
   if (grayscaleChecked) {
     console.log("grayscale selected");
-    grayScale(data); // Convert to grayscale if checked
+    grayScale(data);
   }
 
   const selectedEffect = document.getElementById("effectSelector").value;
@@ -189,7 +189,6 @@ function extendImageData(data) {
   };
 }
 
-// convert to gray scale
 function grayScale(data) {
   for (var i = 0, loop = data.length; i < loop; i += 4) {
     let average = (data[i] + data[i + 1] + data[i + 2]) / 3;
@@ -198,7 +197,6 @@ function grayScale(data) {
     data[i + 2] = average;
   }
 }
-// grayScale(data);
 
 // random dither
 function randomDither(data) {
@@ -225,7 +223,6 @@ function findClosestPaletteColor(value, steps = 1) {
   return Math.round((steps * value) / 255) * Math.floor(255 / steps);
 }
 
-// gray levels
 function grayLevels(data, levels) {
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -237,7 +234,6 @@ function grayLevels(data, levels) {
     }
   }
 }
-// grayLevels(data, 4);
 
 function applyDithering(data, kernel) {
   console.log("applyDithering function");
@@ -268,34 +264,6 @@ function applyDithering(data, kernel) {
   }
   console.log("applyDithering ends");
 }
-
-// grayScale(data);
-// applyDithering(data, sierra24AKernel);
-
-// Floyd-Steinberg Dithering
-function floydDither(data) {
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let [oldR, oldG, oldB] = data.getPixel(x, y);
-      let newR = findClosestPaletteColor(oldR);
-      let newG = findClosestPaletteColor(oldG);
-      let newB = findClosestPaletteColor(oldB);
-      data.setPixel(x, y, newR, newG, newB);
-
-      let errorR = oldR - newR;
-      let errorG = oldG - newG;
-      let errorB = oldB - newB;
-
-      distributeError(x + 1, y, errorR, errorG, errorB, 7 / 16);
-      distributeError(x - 1, y + 1, errorR, errorG, errorB, 3 / 16);
-      distributeError(x, y + 1, errorR, errorG, errorB, 5 / 16);
-      distributeError(x + 1, y + 1, errorR, errorG, errorB, 1 / 16);
-    }
-  }
-}
-
-// grayScale(data);
-// floydDither(data);
 
 function distributeError(x, y, errorR, errorG, errorB, fraction) {
   // return if x and y values are outside of img limits
