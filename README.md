@@ -56,3 +56,10 @@ The script uses global variables like `canvas`, `ctx` (canvas context), `imageDa
 - Conversely, the `setPixel` function updates the color data of a specific pixel.
 - It also calculates the index in the same way as `getPixel`.
 - This function takes the RGBA values as input and sets them in the image data array at the calculated index. If the alpha value is not provided, it defaults to 255 (fully opaque).
+
+### `applyDithering` and `distributeError` functions
+The function iterates over each pixel in the image using nested loops. The outer loop runs vertically (y-axis), and the inner loop runs horizontally (x-axis).
+For each pixel, it retrieves the original color values (red, green, blue) using the `data.getPixel` method. It then quantizes these color values using the `findClosestPaletteColor` function, which reduces the color to its nearest value in a limited palette (typically black or white for monochrome dithering). The quantized color is set back to the pixel using `data.setPixel`. The quantization error is achieved by calling the `distributeError` function.
+
+`distributeError` function distributes the quantization error to neighboring pixels. It takes six parameters - x and y coordinates of the current pixel, the errors in red, green, and blue color channels (`errorR`, `errorG`, `errorB`), and the fraction of the error to be distributed (defined in the kernel).
+The function first checks if the neighboring pixel coordinates are within the image bounds. If not, it simply returns without doing anything. For each neighboring pixel, it adds a portion of the quantization error to the pixel's color values. This portion is determined by the `fraction` parameter which is a part of the kernel.
