@@ -1,12 +1,21 @@
 # Image dithering algorithms app
 #### Video Demo:  https://youtu.be/AoYENxlY63k
 #### Description:
-It is a web-based application for applying various dithering effects to images.
-Dithering is a technique used to create the illusion of color depth in images with a limited color palette.
-It's useful in contexts where color resources are limited, such as in  "retro video games" or printing.
+This application is a web-based tool designed for applying dithering effects to images. Dithering is a digital image processing technique used to create the illusion of color depth in images with a limited color palette. This application allows users to upload images and apply various dithering effects in real-time.
+#####Features
 
-User can upload images and select an algorithm.
-Kernels used include Floyd-Steinberg, Stucki, Burkes, and more, offering users a variety of dithering styles.
-Upon upload, the image is rendered onto an HTML canvas element.
+    Image Upload: Users can upload images, which are then rendered onto an HTML canvas for processing.
+    Dithering Effects: Multiple dithering algorithms are available, each defined by unique kernels like Floyd-Steinberg, Stucki, and Burkes.
+    Grayscale Conversion: An optional feature to convert images to grayscale before applying dithering effects.
+    Real-Time Processing: Instant visual feedback is provided on the canvas as different dithering effects are applied.
 
-When a dithering effect is chosen, the algorithm processes the image pixel-by-pixel based on the selected kernel.
+#####How It Works
+
+    Canvas API: The application uses the HTML5 Canvas API for manipulating image data at the pixel level.
+    ImageData Objects: Manipulation of images is achieved through ImageData objects, which represent the pixel data of the canvas.
+    JavaScript Interactivity: The application is built with JavaScript, ensuring dynamic interaction and immediate response to user inputs.
+
+#####Installation and Setup
+
+No installation is required. Access the application through a web browser. Ensure JavaScript is enabled for full functionality.
+Contributing
