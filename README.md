@@ -1,6 +1,6 @@
 # Image Dithering Algorithms App
 
-![Example Image](img/example.webp "An example image")
+![Example Image](img/example.png "An example image")
 Image credits: https://unsplash.com/@madibade
 
 #### Description:
