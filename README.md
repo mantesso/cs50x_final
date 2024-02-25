@@ -1,8 +1,11 @@
 # Image Dithering Algorithms App
 
+![Example Image](img/example.webp "An example image")
+Image credits: https://unsplash.com/@madibade
+
 #### Description:
 
-This project is a web-based application designed for applying various dithering effects to images. Dithering is an artistic and computational technique used to create the illusion of color depth in images with a limited color palette. By strategically arranging pixels of different colors, dithering simulates gradients and subtle variations, often giving a unique, textured appearance to the images. It's especially useful in contexts where color resources are limited, such as in retro video games, digital art or printing limited colors. The final image is usually much lower in size.
+Built with JavaScript, this project is a web-based tool for applying various dithering effects to images. Dithering is an artistic and computational technique used to create the illusion of color depth in images with a limited color palette. By strategically arranging pixels of different colors, dithering simulates gradients and subtle variations, often giving a textured appearance to the images. It's useful in contexts where color resources are limited, such as in retro video games, digital art or printing limited colors. The final image is usually much lower in size.
 
 ###### Features
 
@@ -15,9 +18,8 @@ This project is a web-based application designed for applying various dithering 
 
 - **Canvas API**: The application uses the HTML5 Canvas API for manipulating image data at the pixel level.
 - **ImageData Objects**: Manipulation of images is achieved through ImageData objects, which represent the pixel data of the canvas.
-- **JavaScript**: The application is built with JavaScript.
 
-### JavaScript Key Components
+### Key Components
 
 - **Dithering Kernels**: Each kernel, such as Floyd-Steinberg, Stucki, or Burkes, dictates a specific way to spread the quantization error of a pixel to its neighbors. This process creates the characteristic patterns of dithering.
 
@@ -71,3 +73,8 @@ For each pixel, it retrieves the original color values (red, green, blue) using 
 
 `distributeError` function distributes the quantization error to neighboring pixels. It takes six parameters - x and y coordinates of the current pixel, the errors in red, green, and blue color channels (`errorR`, `errorG`, `errorB`), and the fraction of the error to be distributed (defined in the kernel).
 The function first checks if the neighboring pixel coordinates are within the image bounds. If not, it simply returns without doing anything. For each neighboring pixel, it adds a portion of the quantization error to the pixel's color values. This portion is determined by the `fraction` parameter which is a part of the kernel.
+
+### Useful dithering resources
+
+- https://tannerhelland.com/2012/12/28/dithering-eleven-algorithms-source-code.html
+- https://github.com/SixLabors/ImageSharp/blob/main/src/ImageSharp/Processing/Processors/Dithering/DHALF.TXT
